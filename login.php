@@ -71,7 +71,6 @@ if (isset($_POST['submit_login'])) {
             <button type="submit" name="submit_login">Login</button>
         </form>
         <p class="text-center margin-top-15 font-small">Belum punya akun? <a href="register.php">Daftar di sini</a></p>
-        <p class="text-center margin-top-15 font-small">Untuk demonstrasi: Username <code>admin</code>, Password <code>admin123</code></p>
     </main>
 
     <footer class="footer">

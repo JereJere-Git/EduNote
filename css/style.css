@@ -7,11 +7,18 @@ body {
     color: #333;
     line-height: 1.6;
     /* Background untuk seluruh body */
-    background-image: '/images/hero-background.jpg'; /* Pastikan path ini benar */
+    background-image: url('../images/hero-background.jpg'); /* Pastikan path ini benar dan gunakan url() */
     background-size: cover;
     background-position: center;
     background-attachment: fixed; /* Untuk efek parallax yang dinamis */
     overflow-x: hidden; /* Mencegah scroll horizontal yang tidak diinginkan */
+}
+
+/* Pastikan semua gambar responsif secara default */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Menghilangkan spasi ekstra di bawah gambar */
 }
 
 .container {
@@ -49,6 +56,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 0 25px; /* Padding samping yang sedikit lebih besar */
+    flex-wrap: wrap; /* Izinkan wrapping untuk elemen di dalam header */
 }
 
 .brand-logo {
@@ -63,6 +71,8 @@ body {
     color: white;
     text-decoration: none;
     transition: color 0.3s ease;
+    display: flex; /* Memastikan ikon dan teks sejajar */
+    align-items: center;
 }
 
 .brand-logo a:hover {
@@ -97,7 +107,8 @@ body {
     display: inline-block; /* Agar transform bekerja */
 }
 
-.main-nav ul li a:hover {
+.main-nav ul li a:hover,
+.main-nav ul li a.active { /* Tambahkan .active class untuk link yang sedang aktif */
     color: #a5d6a7; /* Warna sedikit lebih terang saat hover */
     transform: translateY(-2px); /* Efek naik saat hover */
 }
@@ -124,16 +135,19 @@ body {
 .nav-toggle {
     display: none;
     flex-direction: column;
+    justify-content: space-between; /* Memberi jarak antar bar */
+    width: 28px; /* Lebih lebar */
+    height: 20px; /* Tinggi keseluruhan toggle */
     cursor: pointer;
     z-index: 1001;
     padding: 5px; /* Area klik lebih besar */
 }
 
 .nav-toggle span {
-    width: 28px; /* Lebih lebar */
+    display: block;
+    width: 100%;
     height: 4px; /* Lebih tebal */
     background-color: white;
-    margin: 5px 0; /* Jarak antar bar lebih besar */
     transition: all 0.3s ease;
     border-radius: 2px;
 }
@@ -157,9 +171,10 @@ main {
     position: relative;
     z-index: 10;
 }
+/* Existing CSS above... */
 
 /* Forms (Login, Register, Add/Edit) - Efek Akrilik Lebih Menonjol */
-.form-container, .login-form-container, .register-form-container {
+.form-container, .login-form-container, .register-form-container, .form-card { /* Added .form-card here */
     max-width: 550px; /* Sedikit lebih lebar */
     margin: 100px auto 70px auto; /* Margin atas dan bawah lebih besar */
     padding: 50px; /* Padding lebih besar */
@@ -180,14 +195,14 @@ main {
     border: 1px solid rgba(255, 255, 255, 0.4); /* Border transparan yang lebih terlihat */
 }
 
-.form-container h2, .login-form-container h2, .register-form-container h2 {
+.form-container h2, .login-form-container h2, .register-form-container h2, .form-card h1 { /* Added .form-card h1 for consistency */
     color: #2E7D32; /* Warna hijau yang lebih kaya */
     margin-bottom: 35px;
     font-size: 2.5em; /* Ukuran judul lebih besar */
     font-weight: 700;
 }
 
-.form-container label, .login-form-container label, .register-form-container label {
+.form-container label, .login-form-container label, .register-form-container label, .form-card label { /* Added .form-card label */
     display: block;
     text-align: left;
     margin-bottom: 10px;
@@ -204,7 +219,10 @@ main {
 .login-form-container input[type="password"],
 .register-form-container input[type="text"],
 .register-form-container input[type="password"],
-.register-form-container select {
+.register-form-container select,
+.form-card input[type="text"], /* Added .form-card inputs */
+.form-card input[type="password"],
+.form-card select {
     width: calc(100% - 24px); /* Sesuaikan dengan padding */
     padding: 14px 12px; /* Padding lebih besar */
     margin-bottom: 25px; /* Jarak antar input lebih besar */
@@ -213,6 +231,7 @@ main {
     font-size: 1.05em; /* Ukuran font sedikit lebih besar */
     background-color: rgba(255, 255, 255, 0.9); /* Latar belakang input semi-transparan */
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box; /* Pastikan padding tidak menambah lebar */
 }
 
 .form-container input[type="text"]:focus,
@@ -224,12 +243,14 @@ main {
 .login-form-container input[type="password"]:focus,
 .register-form-container input[type="text"]:focus,
 .register-form-container input[type="password"]:focus,
-.register-form-container select:focus {
+.register-form-container select:focus,
+.form-card input[type="text"]:focus, /* Added .form-card focus states */
+.form-card input[type="password"]:focus,
+.form-card select:focus {
     border-color: #4CAF50; /* Border hijau saat fokus */
     box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3); /* Ring cahaya saat fokus */
     outline: none;
 }
-
 
 .form-container textarea {
     min-height: 120px; /* Tinggi textarea lebih besar */
@@ -251,10 +272,12 @@ main {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-.form-container button:hover, .login-form-container button:hover, .register-form-container button:hover {
-    background-color: #388E3C;
-    transform: translateY(-3px); /* Efek naik saat hover */
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+.form-group { /* Added this for consistent spacing within forms */
+    margin-bottom: 15px;
+}
+
+.form-group:last-of-type {
+    margin-bottom: 0;
 }
 
 /* Messages (Success/Error) */
@@ -512,7 +535,7 @@ main {
 }
 
 .dashboard-header h1 {
-    color: #ffffff;
+    color: #2E7D32; /* Warna hijau gelap yang kaya */
     font-size: 3em; /* Ukuran judul lebih besar */
     margin-bottom: 15px;
     font-weight: 700;
@@ -520,7 +543,7 @@ main {
 
 .dashboard-header p {
     font-size: 1.2em; /* Font lebih besar */
-    color: #ffffff;
+    color: #555; /* Warna teks yang lebih gelap */
     margin-bottom: 25px;
 }
 
@@ -539,7 +562,7 @@ main {
 }
 
 /* Table Styles */
-.data-table {
+.data-table { /* Menggunakan nama asli data-table */
     width: 100%;
     border-collapse: separate; /* Gunakan separate untuk border-radius */
     border-spacing: 0; /* Hapus spasi default */
@@ -773,37 +796,74 @@ main {
     padding: 0 25px;
 }
 
-/* Responsive Design (You would typically add media queries here) */
+/* Responsive Design (Media Queries)
+ Ini hanyalah test, sedang dalam tahap pengembangan
+ */
+
+/* Untuk layar dengan lebar maksimum 1024px (tablet landscape dan beberapa laptop kecil) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 15px;
+    }
+
+    .hero-home-title {
+        font-size: 3em;
+    }
+
+    .hero-home-description {
+        font-size: 1.2em;
+    }
+
+    .main-nav ul li {
+        margin-left: 20px;
+    }
+}
+
+/* Untuk layar dengan lebar maksimum 768px (tablet portrait, smartphone landscape) */
 @media (max-width: 768px) {
     .header .container {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row; /* Kembali ke baris untuk logo dan toggle */
+        align-items: center;
+        justify-content: space-between; /* Untuk meletakkan toggle di kanan */
     }
 
     .main-nav {
-        display: none; /* Hidden by default */
+        display: none; /* Sembunyikan secara default */
+        position: absolute;
+        top: 60px; /* Sesuaikan dengan tinggi header */
+        left: 0;
         width: 100%;
-        text-align: center;
-        margin-top: 20px;
+        background-color: #4CAF50; /* Latar belakang untuk menu mobile */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 999;
+        overflow-y: auto; /* Jika menu panjang, bisa discroll */
+        max-height: calc(100vh - 60px); /* Batasi tinggi menu */
     }
 
-    .main-nav.active {
-        display: block; /* Show when active */
+    .main-nav.nav-open { /* Class ini ditambahkan oleh script.js */
+        display: block; /* Tampilkan saat menu terbuka */
     }
 
     .main-nav ul {
         flex-direction: column;
+        padding: 20px 0;
+        align-items: center; /* Pusatkan item menu */
     }
 
     .main-nav ul li {
         margin: 10px 0;
+        width: 100%; /* Lebar penuh untuk setiap item menu */
+        text-align: center;
+    }
+
+    .main-nav ul li a {
+        padding: 10px 0;
+        display: block; /* Agar seluruh area link dapat diklik */
     }
 
     .nav-toggle {
-        display: flex;
-        position: absolute;
-        right: 25px;
-        top: 25px;
+        display: flex; /* Tampilkan hamburger menu */
+        margin-left: auto; /* Pindahkan ke kanan */
     }
 
     .hero-home-title {
@@ -815,21 +875,29 @@ main {
     }
 
     .hero-home-buttons {
-        flex-direction: column;
+        flex-direction: column; /* Tombol bertumpuk di layar kecil */
     }
 
     .hero-home-buttons .button {
-        margin: 10px 0;
-        width: 80%;
+        width: 90%; /* Lebar tombol menyesuaikan */
+        margin: 10px auto; /* Pusatkan tombol */
     }
 
     .features-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Satu kolom untuk fitur */
     }
 
-    .form-container, .login-form-container, .register-form-container {
+    .form-container, .login-form-container, .register-form-container, .form-card { /* Sesuaikan untuk form mobile */
         padding: 30px;
         margin: 50px auto;
+        max-width: 90%; /* Biarkan form agak lebih lebar di mobile */
+        min-height: unset; /* Hapus tinggi minimum untuk mobile */
+    }
+
+    .data-table th,
+    .data-table td { /* Menggunakan nama asli data-table */
+        padding: 8px 10px; /* Kurangi padding tabel */
+        font-size: 0.9em; /* Kurangi ukuran font tabel */
     }
 
     .stat-card {
@@ -847,3 +915,23 @@ main {
         width: 100%;
     }
 }
+
+/* Untuk layar dengan lebar maksimum 480px (smartphone portrait) */
+@media (max-width: 480px) {
+    .hero-home-title {
+        font-size: 2em;
+    }
+
+    .hero-home-description {
+        font-size: 1em;
+    }
+
+    .form-container h2 {
+        font-size: 1.8em; /* Sedikit lebih besar dari 1.6em */
+    }
+
+    .data-table { /* Menggunakan nama asli data-table */
+        font-size: 0.85em; /* Lebih kecil lagi untuk tabel */
+    }
+}
+

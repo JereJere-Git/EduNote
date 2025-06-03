@@ -16,6 +16,31 @@ $user_id = $user['id'];
 $role = $user['role'];
 $username = $user['username']; // Get the username from the session
 
+// --- Logika Notifikasi Deadline ---
+$upcoming_tasks = [];
+if ($role == 'mahasiswa') { // Notifikasi hanya relevan untuk mahasiswa
+    $today = date('Y-m-d');
+    $upcoming_days = 3; // Definisi 'mendekati deadline': dalam 3 hari ke depan
+    $upcoming_deadline_date = date('Y-m-d', strtotime("+$upcoming_days days"));
+
+    $upcoming_query = "SELECT tasks.title, tasks.deadline, subjects.name as subject
+                       FROM tasks
+                       JOIN subjects ON tasks.subject_id = subjects.id
+                       WHERE tasks.user_id = $user_id
+                       AND tasks.status = 'belum'
+                       AND tasks.deadline BETWEEN '$today' AND '$upcoming_deadline_date'
+                       ORDER BY tasks.deadline ASC";
+
+    $upcoming_result = mysqli_query($conn, $upcoming_query);
+    if ($upcoming_result) {
+        while ($task = mysqli_fetch_assoc($upcoming_result)) {
+            $upcoming_tasks[] = $task;
+        }
+    }
+}
+// --- Akhir Logika Notifikasi Deadline ---
+
+
 // Ambil data statistik untuk admin
 if ($role == 'admin') {
     $total_users_query = "SELECT COUNT(id) AS total_users FROM users";
@@ -33,6 +58,10 @@ if ($role == 'admin') {
     // Ambil semua mata kuliah untuk ditampilkan di tabel admin
     $all_subjects_query = "SELECT id, name FROM subjects ORDER BY name ASC";
     $all_subjects_result = mysqli_query($conn, $all_subjects_query);
+
+    // Ambil semua pengguna untuk ditampilkan di tabel admin (NEW)
+    $all_users_query = "SELECT id, username, role FROM users ORDER BY username ASC";
+    $all_users_result = mysqli_query($conn, $all_users_query);
 }
 
 // --- START FILTER & SORT LOGIC ---
@@ -69,15 +98,15 @@ $subjects_result_filter = mysqli_query($conn, $subjects_query_filter);
 
 // Bangun query utama untuk tugas
 if ($role == 'admin') {
-    $query = "SELECT tasks.*, users.username, subjects.name as subject 
-              FROM tasks 
-              JOIN users ON tasks.user_id = users.id 
+    $query = "SELECT tasks.*, users.username, subjects.name as subject
+              FROM tasks
+              JOIN users ON tasks.user_id = users.id
               JOIN subjects ON tasks.subject_id = subjects.id
               $where_sql
               ORDER BY $sort_by $sort_order";
 } else { // mahasiswa
-    $query = "SELECT tasks.*, subjects.name as subject 
-              FROM tasks 
+    $query = "SELECT tasks.*, subjects.name as subject
+              FROM tasks
               JOIN subjects ON tasks.subject_id = subjects.id
               $where_sql
               ORDER BY $sort_by $sort_order";
@@ -94,6 +123,55 @@ $result = mysqli_query($conn, $query);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - EduNote</title>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Gaya untuk Notifikasi Deadline */
+        .notification-box {
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            display: flex; /* Menggunakan flexbox untuk ikon dan teks */
+            align-items: flex-start; /* Mengatur item dari atas */
+            gap: 15px; /* Jarak antara ikon dan teks */
+            font-size: 1.1em;
+            line-height: 1.5;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .notification-box p {
+            margin: 0; /* Hapus margin default paragraf */
+        }
+
+        .notification-box .notification-icon {
+            font-size: 2.5em; /* Ukuran ikon lebih besar */
+            line-height: 1;
+            margin-top: -5px; /* Penyesuaian posisi vertikal ikon */
+        }
+
+        /* Warna untuk notifikasi warning (ada tugas deadline) */
+        .notification-box.warning {
+            background-color: #fff3cd; /* Kuning muda */
+            border: 1px solid #ffeeba; /* Border kuning lebih gelap */
+            color: #856404; /* Teks kuning gelap */
+        }
+
+        /* Warna untuk notifikasi info (tidak ada tugas deadline) */
+        .notification-box.info {
+            background-color: #d1ecf1; /* Biru muda */
+            border: 1px solid #bee5eb; /* Border biru lebih gelap */
+            color: #0c5460; /* Teks biru gelap */
+        }
+
+        .notification-box ul {
+            margin-top: 10px;
+            padding-left: 20px;
+            list-style: disc; /* Gaya list bullet */
+        }
+
+        .notification-box ul li {
+            margin-bottom: 5px;
+        }
+        /* Akhir Gaya Notifikasi Deadline */
+    </style>
 </head>
 <body>
     <header class="header">
@@ -119,8 +197,35 @@ $result = mysqli_query($conn, $query);
 
     <main class="container">
         <h1>Dashboard Tugas</h1>
-        <p class="welcome-message">Selamat datang, *<?= htmlspecialchars($username) ?>*!</p>
+        <p class="welcome-message">Selamat datang, <strong><?= htmlspecialchars($username) ?></strong>!</p>
 
+        <?php if ($role == 'mahasiswa'): // Notifikasi hanya untuk peran 'mahasiswa' ?>
+            <?php if (!empty($upcoming_tasks)): ?>
+                <div class="notification-box warning">
+                    <p class="notification-icon">🚨</p>
+                    <div>
+                        <?php if (count($upcoming_tasks) == 1): ?>
+                            <?php $task = $upcoming_tasks[0]; ?>
+                            <p>Perhatian! Tugas <strong><?= htmlspecialchars($task['title']) ?></strong> (Mata Kuliah: <strong><?= htmlspecialchars($task['subject']) ?></strong>) akan segera tiba deadline-nya pada <strong><?= htmlspecialchars(date('d F Y', strtotime($task['deadline']))) ?></strong>. Semangat menyelesaikannya! 💪</p>
+                        <?php else: ?>
+                            <p>🔔 Ada <strong><?= count($upcoming_tasks) ?></strong> tugas yang menanti perhatianmu dalam beberapa hari ke depan!</p>
+                            <p>Yuk, semangat kejar tuntas semuanya! Daftar tugas terdekat:</p>
+                            <ul>
+                                <?php foreach ($upcoming_tasks as $task): ?>
+                                    <li><strong><?= htmlspecialchars($task['title']) ?></strong> (<?= htmlspecialchars($task['subject']) ?>) - Deadline: <?= htmlspecialchars(date('d F Y', strtotime($task['deadline']))) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div class="notification-box info">
+                    <p class="notification-icon">✨</p>
+                    <p>Wah, semua tugasmu terkendali! Waktunya rileks sejenak atau mulai belajar materi baru. 😉</p>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+        
         <?php if ($role == 'admin'): ?>
             <div class="admin-dashboard-overview">
                 <div class="stats-cards">
@@ -168,6 +273,41 @@ $result = mysqli_query($conn, $query);
                 <?php else: ?>
                     <p class="text-center">Belum ada mata kuliah yang ditambahkan.</p>
                 <?php endif; ?>
+
+               
+                <h3 style="margin-top: 40px; margin-bottom: 20px; color: #4CAF50;">Manajemen Pengguna</h3>
+                <div class="dashboard-actions">
+                    <a href="register.php" class="button primary-button">Tambah Pengguna Baru</a>
+                </div>
+
+                <?php if (mysqli_num_rows($all_users_result) > 0): ?>
+                    <table class="data-table users-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th class="actions">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while($user_data = mysqli_fetch_assoc($all_users_result)): ?>
+                                <tr>
+                                    <td><?= $user_data['id'] ?></td>
+                                    <td><?= $user_data['username'] ?></td>
+                                    <td><?= $user_data['role'] ?></td>
+                                    <td class="actions">
+                                        <a href="edit_user.php?id=<?= $user_data['id'] ?>">Edit</a>
+                                        <a href="delete_user.php?id=<?= $user_data['id'] ?>" onclick="return confirm('Yakin ingin menghapus pengguna ini? Semua tugas yang terkait juga akan dihapus!')">Hapus</a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                <?php else: ?>
+                    <p class="text-center">Belum ada pengguna yang terdaftar.</p>
+                <?php endif; ?>
+                
 
                 <h3 style="margin-top: 40px; margin-bottom: 20px; color: #4CAF50;">Semua Tugas Pengguna</h3>
             <?php else: /* Untuk Mahasiswa */ ?>

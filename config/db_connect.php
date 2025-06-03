@@ -1,8 +1,8 @@
 <?php
-$host = "localhost";
-$user = "root";
-$pass = "";
-$dbname = "projectweb";
+$host = "sql211.infinityfree.com";
+$user = "if0_39146366";
+$pass = "28g4Pw91sJ";
+$dbname = "if0_39146366_ProjectEdu";
 
 $conn = mysqli_connect($host, $user, $pass, $dbname);
 
